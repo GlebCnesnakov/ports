@@ -28,7 +28,7 @@ namespace ports
         int LeftBorder { get; } = 6;
         int RightBorder { get; } = 8;
         int[] arrivalTimesForShips = new int[3000];
-        Channel[] channels = new Channel[3];
+        Channel[] channels = new Channel[3] { new(), new(), new()};
         
         double[] workingTimeForChannels = new double[3];//массив для хранения времени работы каналов
         int[] countOfShips = new int[3];
@@ -83,7 +83,7 @@ namespace ports
                 if (!channels[i].b) channels[i].workingTime += time;
             }
         }
-        void FreeChannel(int channelNumber, string type)//освободить канал
+        void FreeChannel(int channelNumber)//освободить канал
         {
             channels[channelNumber].b = true;
             
@@ -109,46 +109,46 @@ namespace ports
             }
             for (int i = 0; i < SimulationTime; i++)//через час
             {
-                foreach (Channel c in channels)//проверка каналов на наличие корабля, отплытие, счетчики часов пребывания
+                for (int u = 0; u < channels.Length; u++)
                 {
-                    int u = 0;
-                    if (!c.b)//канал занят
+                    Channel c = channels[u]; // Получаем канал
+                    if (!c.b) // Канал занят
                     {
-                        switch(c.ship.ShipType)//в завимиости от типа кораблся прибавляем к счетчику загрузки 1 час
+                        switch (c.ship.ShipType)
                         {
                             case "Первый":
                                 firstChannelLoadingCounter++;
-                                if (c.ship.LoadTime >= firstChannelLoadingCounter)//если время загрузки сравнялось
+                                if (c.ship.LoadTime <= firstChannelLoadingCounter) // если время загрузки закончилось
                                 {
-                                    FreeChannel(u, "Первый");   //освободить канал и +1 в счетчик
+                                    FreeChannel(u);   // освободить канал
                                     countOfShips[0]++;
                                     firstChannelLoadingCounter = 0;
                                 }
                                 break;
                             case "Второй":
                                 secondChannelLoadingCounter++;
-                                if (c.ship.LoadTime >= secondChannelLoadingCounter)//если время загрузки сравнялось
+                                if (c.ship.LoadTime <= secondChannelLoadingCounter)
                                 {
-                                    FreeChannel(u, "Второй");   //освободить канал и +1 в счетчик
+                                    FreeChannel(u);
                                     countOfShips[1]++;
                                     secondChannelLoadingCounter = 0;
                                 }
                                 break;
                             case "Третий":
                                 thirdChannelLoadingCounter++;
-                                if (c.ship.LoadTime >= thirdChannelLoadingCounter)//если время загрузки сравнялось
+                                if (c.ship.LoadTime <= thirdChannelLoadingCounter)
                                 {
-                                    FreeChannel(u, "Третий");   //освободить канал и +1 в счетчик
+                                    FreeChannel(u);
                                     countOfShips[2]++;
                                     thirdChannelLoadingCounter = 0;
                                 }
                                 break;
                         }
                     }
-                    u++;
                 }
-                
-                
+
+
+
                 if (i < arrivalTimesForShips[nextArrivalTimeForShipiterator])//новый корабль не прибыл
                 {
                     if (queue.Count == 0)//и в очереди никого
