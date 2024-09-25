@@ -15,11 +15,6 @@ namespace ports
             public Ship ship;
             public int workingTime;
             public Channel() { }
-            //public Channel(bool b, Ship ship)
-            //{
-            //    this.b = b;
-            //    this.ship = ship;
-            //}
         }
         Random rnd = new Random();
         Ship[] ships = new Ship[3000];
@@ -29,6 +24,9 @@ namespace ports
         int RightBorder { get; } = 8;
         int[] arrivalTimesForShips = new int[3000];
         Channel[] channels = new Channel[3] { new(), new(), new()};
+
+        int stormExpectation = 48;//мат ожидание 48 часов
+        List<int> stormTimes = new List<int>();
         
         double[] workingTimeForChannels = new double[3];//массив для хранения времени работы каналов
         int[] countOfShips = new int[3];
@@ -50,6 +48,24 @@ namespace ports
                 else if (random > ArrivalChances.Second.Chance && random <= ArrivalChances.Third.Chance)
                 {
                     ships[i] = new Ship(rnd.Next(ArrivalChances.Third.LeftTime, ArrivalChances.Third.RightTime), "Третий");
+                }
+
+                double timeForStorms = Storm.GetExponentialTime();
+                if (stormTimes.Count > 0)
+                {
+                    int j = (int)timeForStorms + stormTimes[stormTimes.Count - 1]; // Берем последний элемент из списка
+                    if (j == stormTimes[stormTimes.Count - 1])
+                    {
+                        continue;
+                    }
+                    if (j < SimulationTime)
+                    {
+                        stormTimes.Add(j);
+                    }
+                }
+                else
+                {
+                    stormTimes.Add((int)timeForStorms); // Добавляем первый элемент, если список пуст
                 }
             }
         }
@@ -109,6 +125,10 @@ namespace ports
             }
             for (int i = 0; i < SimulationTime; i++)//через час
             {
+                //определение времён наступлений штормов
+                
+
+                
                 for (int u = 0; u < channels.Length; u++)
                 {
                     Channel c = channels[u]; // Получаем канал
