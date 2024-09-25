@@ -63,7 +63,7 @@ namespace ports
                         stormTimes.Add(j);
                         int stormDuration = rnd.Next(Storm.LeftBorder, Storm.RightBorder);//добавление времён фактического шторма
 
-                        for(int b = 0; b < stormDuration;b++)
+                        for(int b = 1; b <= stormDuration;b++)
                         {
                             stormTimes.Add(j + b);
                         }
@@ -74,14 +74,14 @@ namespace ports
                     stormTimes.Add((int)timeForStorms); //lобавляем первый элемент если список пуст
                     int stormDuration = rnd.Next(Storm.LeftBorder, Storm.RightBorder);//добавление времён фактического шторма
                     
-                    for (int b = 0; b < stormDuration; b++)
+                    for (int b = 1; b <= stormDuration; b++)
                     {
                         stormTimes.Add((int)timeForStorms + b);
                     }
                 }
             }
         }
-        bool TakeChannel()//попробовать занять канал
+        bool TakeChannel(bool IsThereNewShip)//попробовать занять канал
         {
             for(int i = 0; i < 3; i++)
             {
@@ -94,7 +94,8 @@ namespace ports
                     else
                     {
                         channels[i].ship = queue.Dequeue();//берем из очереди
-                        queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+                        if (IsThereNewShip)//если есть новый корабль, то в очередь
+                            queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
                     }
                     channels[i].b = false;
                     countOfShips[i]++;
@@ -135,6 +136,7 @@ namespace ports
                     arrivalTimesForShips[i] = rnd.Next(LeftBorder, RightBorder);// * (RightBorder - LeftBorder) + LeftBorder);
                 }
             }
+            
             for (int i = 0; i < SimulationTime; i++)//через час
             {
                 
@@ -183,6 +185,7 @@ namespace ports
 
                 if ((i < arrivalTimesForShips[nextArrivalTimeForShipiterator]) || stormTimes.Contains(i))//новый корабль не прибыл
                 {
+                    
                     if (queue.Count == 0)//и в очереди никого -> ничего не происходит
                     {
                         //if (!TakeChannel())//все каналы заняты
@@ -190,15 +193,15 @@ namespace ports
                         //    queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
                         //}
                     }
-                    else
+                    else // в очереди кто то есть
                     {
                         //queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
-                        TakeChannel();
+                        TakeChannel(false);
                     }
                 }
                 else // корабль прибыл
                 {
-                    if (!TakeChannel())//все каналы заняты
+                    if (!TakeChannel(true))//все каналы заняты
                     {
                         queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
                     }
@@ -211,6 +214,7 @@ namespace ports
 
             }
             Console.WriteLine(countOfShips[0] + countOfShips[1] + countOfShips[2]);
+            
         }
     }
 }
