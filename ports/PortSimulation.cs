@@ -50,10 +50,10 @@ namespace ports
                     ships[i] = new Ship(rnd.Next(ArrivalChances.Third.LeftTime, ArrivalChances.Third.RightTime), "Третий");
                 }
 
-                double timeForStorms = Storm.GetExponentialTime();
+                double timeForStorms = Storm.GetExponentialTime();//определение времён наступлений штормов
                 if (stormTimes.Count > 0)
                 {
-                    int j = (int)timeForStorms + stormTimes[stormTimes.Count - 1]; // Берем последний элемент из списка
+                    int j = (int)timeForStorms + stormTimes[stormTimes.Count - 1]; //последний элемент из списка
                     if (j == stormTimes[stormTimes.Count - 1])
                     {
                         continue;
@@ -61,15 +61,27 @@ namespace ports
                     if (j < SimulationTime)
                     {
                         stormTimes.Add(j);
+                        int stormDuration = rnd.Next(Storm.LeftBorder, Storm.RightBorder);//добавление времён фактического шторма
+
+                        for(int b = 0; b < stormDuration;b++)
+                        {
+                            stormTimes.Add(j + b);
+                        }
                     }
                 }
                 else
                 {
-                    stormTimes.Add((int)timeForStorms); // Добавляем первый элемент, если список пуст
+                    stormTimes.Add((int)timeForStorms); //lобавляем первый элемент если список пуст
+                    int stormDuration = rnd.Next(Storm.LeftBorder, Storm.RightBorder);//добавление времён фактического шторма
+                    
+                    for (int b = 0; b < stormDuration; b++)
+                    {
+                        stormTimes.Add((int)timeForStorms + b);
+                    }
                 }
             }
         }
-        bool TakeChannel()//занять канал
+        bool TakeChannel()//попробовать занять канал
         {
             for(int i = 0; i < 3; i++)
             {
@@ -125,7 +137,7 @@ namespace ports
             }
             for (int i = 0; i < SimulationTime; i++)//через час
             {
-                //определение времён наступлений штормов
+                
                 
 
                 
@@ -169,18 +181,19 @@ namespace ports
 
 
 
-                if (i < arrivalTimesForShips[nextArrivalTimeForShipiterator])//новый корабль не прибыл
+                if ((i < arrivalTimesForShips[nextArrivalTimeForShipiterator]) || stormTimes.Contains(i))//новый корабль не прибыл
                 {
-                    if (queue.Count == 0)//и в очереди никого
+                    if (queue.Count == 0)//и в очереди никого -> ничего не происходит
                     {
-                        if (!TakeChannel())//все каналы заняты
-                        {
-                            queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
-                        }
+                        //if (!TakeChannel())//все каналы заняты
+                        //{
+                        //    queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+                        //}
                     }
                     else
                     {
-                        queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+                        //queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+                        TakeChannel();
                     }
                 }
                 else // корабль прибыл
