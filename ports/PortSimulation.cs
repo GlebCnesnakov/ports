@@ -30,6 +30,7 @@ namespace ports
         
         double[] workingTimeForChannels = new double[3];//массив для хранения времени работы каналов
         int[] countOfShips = new int[3];
+        List<int> queueTimes = new List<int>(new int[3000]);
         //int shipCount = 0;
         public PortSimulation() //создаются корабли в соответствии с вероятностями
         {
@@ -81,7 +82,7 @@ namespace ports
                 }
             }
         }
-        bool TakeChannel(bool IsThereNewShip)//попробовать занять канал
+        bool TakeChannel(bool IsThereNewShip, int nextArrivalTimeForShipiterator, int currTime)//попробовать занять канал
         {
             for(int i = 0; i < 3; i++)
             {
@@ -94,8 +95,13 @@ namespace ports
                     else
                     {
                         channels[i].ship = queue.Dequeue();//берем из очереди
+                                                                        //время прибытия
+                        queueTimes[nextArrivalTimeForShipiterator] = arrivalTimesForShips[nextArrivalTimeForShipiterator] - currTime;
+                        
                         if (IsThereNewShip)//если есть новый корабль, то в очередь
+                        {
                             queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+                        }
                     }
                     channels[i].b = false;
                     countOfShips[i]++;
@@ -111,6 +117,7 @@ namespace ports
             {
                 if (!channels[i].b) channels[i].workingTime += time;
             }
+            
         }
         void FreeChannel(int channelNumber)//освободить канал
         {
@@ -118,6 +125,7 @@ namespace ports
             
             channels[channelNumber].ship = null!;
         }
+        int counter = 0;
         public void Simulate()
         {
             int firstChannelLoadingCounter = 0;
@@ -139,10 +147,6 @@ namespace ports
             
             for (int i = 0; i < SimulationTime; i++)//через час
             {
-                
-                
-
-                
                 for (int u = 0; u < channels.Length; u++)
                 {
                     Channel c = channels[u]; // Получаем канал
@@ -188,22 +192,20 @@ namespace ports
                     
                     if (queue.Count == 0)//и в очереди никого -> ничего не происходит
                     {
-                        //if (!TakeChannel())//все каналы заняты
-                        //{
-                        //    queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
-                        //}
                     }
                     else // в очереди кто то есть
                     {
                         //queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
-                        TakeChannel(false);
+                        TakeChannel(false, nextArrivalTimeForShipiterator, i);
                     }
                 }
                 else // корабль прибыл
                 {
-                    if (!TakeChannel(true))//все каналы заняты
+                    if (!TakeChannel(true, nextArrivalTimeForShipiterator, i))//все каналы заняты
                     {
                         queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+
+                        
                     }
                     nextArrivalTimeForShipiterator++;
                 }
@@ -211,10 +213,31 @@ namespace ports
                 
 
                 IncreaseChannelsWorkingTime(1);
-
+                counter++;
             }
-            Console.WriteLine(countOfShips[0] + countOfShips[1] + countOfShips[2]);
-            
+
+
+
+            Console.WriteLine("Всего кораблей" + (countOfShips[0] + countOfShips[1] + countOfShips[2]));
+            for (int i = 0; i < 3; i++)
+            {
+                Console.WriteLine("Работа канала: " + (i + 1) + " " + channels[i].workingTime);
+                Console.WriteLine("Простой канала: " + (i + 1) + " " + (8640 - channels[i].workingTime));
+                
+            }
+            double sr = 0;
+            double h = 0;
+            Console.WriteLine("Типы: " + countOfShips[0] + " " + countOfShips[1] + " " + countOfShips[2]);
+            for (int i = 0; i < queueTimes.Count; i++)
+            {
+                
+                if (queueTimes[i] > 0)
+                {
+                    sr += queueTimes[i];
+                    h++;
+                }
+            }
+            Console.WriteLine("Среднее " + sr / h);
         }
     }
 }
