@@ -10,8 +10,8 @@ namespace ports
     {
         public string ShipType { get; set; }
         public int LoadTime { get; set; }
-        public int EnterTime { get; set; }
-        public int ExitTime { get; set; }
+        //public int EnterTime { get; set; }
+        //public int ExitTime { get; set; }
         //public int ArrivalTime { get; set; }
         public Ship() { }
         public Ship(int loadTime,  string shipType)

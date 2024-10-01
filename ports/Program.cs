@@ -1,7 +1,7 @@
 ﻿
 
 using System.Linq.Expressions;
-
+using static System.Console;
 namespace ports
 {
     class Porgram
@@ -10,10 +10,8 @@ namespace ports
         {
             PortSimulation psm = new PortSimulation();
             psm.Simulate();
-            //Random rnd = new Random();
-            //double lambda = 1 / 15.0;
-            //for(int i = 0; i < 10;i++)
-            //    Console.WriteLine(-Math.Log(rnd.NextDouble()) / lambda);
+            WriteLine("Дааа ебал я того маму рот");
+            WriteLine("Друзья, а че ебальники у всех грустные, доброе утро, сегодня прекрасный день");
         }
     }
 }
