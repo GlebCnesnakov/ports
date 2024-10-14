@@ -15,6 +15,9 @@ namespace ports
             public bool b = true;
             public Ship ship;
             public int workingTime;
+            public int firstChannelCounter = 0;
+            public int secondChannelCounter = 0;
+            public int thirdChannelCounter = 0;
             public Channel() { }
         }
         Random rnd = new Random();
@@ -42,17 +45,17 @@ namespace ports
                 double random = rnd.NextDouble();
                 if (random <= ArrivalChances.First.Chance)
                 {
-                    ships[i] = (new Ship(rnd.Next(ArrivalChances.First.LeftTime, ArrivalChances.First.RightTime), "Первый"));
+                    ships[i] = (new Ship(rnd.Next(ArrivalChances.First.LeftTime, ArrivalChances.First.RightTime), "Первый", i));
                     //Console.WriteLine(ships[i].LoadTime + " 1"); 
                 }
                 else if (random > ArrivalChances.First.Chance && random <= ArrivalChances.Second.Chance)
                 {
-                    ships[i] = (new Ship(rnd.Next(ArrivalChances.Second.LeftTime, ArrivalChances.Second.RightTime), "Второй"));
+                    ships[i] = (new Ship(rnd.Next(ArrivalChances.Second.LeftTime, ArrivalChances.Second.RightTime), "Второй", i));
                     //Console.WriteLine(ships[i].LoadTime + " 2");
                 }
                 else if (random > ArrivalChances.Second.Chance && random <= ArrivalChances.Third.Chance)
                 {
-                    ships[i] = (new Ship(rnd.Next(ArrivalChances.Third.LeftTime, ArrivalChances.Third.RightTime), "Третий"));
+                    ships[i] = (new Ship(rnd.Next(ArrivalChances.Third.LeftTime, ArrivalChances.Third.RightTime), "Третий", i));
                     //Console.WriteLine(ships[i].LoadTime + " 3");
                 }
                 //WriteLine(ships.Length + " ships count");
@@ -89,10 +92,7 @@ namespace ports
                 }
                 
             }
-            //for (int i = 0; i < stormTimes.Count; i++)
-            //{
-            //    WriteLine(stormTimes[i]);
-            //}
+            
         }
         bool TakeChannel(bool IsThereNewShip, int nextArrivalTimeForShipiterator, int currTime)//попробовать занять канал
         {
@@ -104,19 +104,26 @@ namespace ports
                     if (queue.Count == 0) { // в очереди никого
                         //когда первый встречный канал свободен, помещаем очередной корабль в канал, закрываем канал,
                         //WriteLine(countOfShips[0] + countOfShips[1] + countOfShips[2]);
-                        channels[i].ship = ships[countOfShips[0] + countOfShips[1] + countOfShips[2]];
+                        //ships[countOfShips[0] + countOfShips[1] + countOfShips[2]].SetTime(arrivalTimesForShips[nextArrivalTimeForShipiterator]);
+                        channels[i].ship = ships[nextArrivalTimeForShipiterator];
+                        channels[i].ship.f = true;
                     }
                     else
                     {
                         channels[i].ship = queue.Dequeue();//берем из очереди
-                                                                        //время прибытия
-                        queueTimes[nextArrivalTimeForShipiterator] = arrivalTimesForShips[nextArrivalTimeForShipiterator] - currTime;
+                        channels[i].ship.f = true;                      //время прибытия
 
+
+
+
+                        queueTimes[channels[i].ship.ID] = currTime - channels[i].ship.ArrivalTime;// минус время прибытия корабля
+                        WriteLine($"Текущее время{currTime} - Время прибытия {channels[i].ship.ArrivalTime} - ID {channels[i].ship.ID}"); 
                         //если есть новый корабль и вышло так, что каналы были заняты всем кораблыми из очереди
                         if (IsThereNewShip && i == channels.Length - 1)
                         {
                             WriteLine("Зашел когда три");
-                            queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
+                            //ships[countOfShips[0] + countOfShips[1] + countOfShips[2]].SetTime(arrivalTimesForShips[nextArrivalTimeForShipiterator]);
+                            queue.Enqueue(ships[nextArrivalTimeForShipiterator]);
                         }
                     }
                     channels[i].b = false;
@@ -141,7 +148,7 @@ namespace ports
             
             channels[channelNumber].ship = null!;
         }
-        int counter = 0;
+        
         public void Simulate()
         {
             int firstChannelLoadingCounter = 0;
@@ -159,6 +166,7 @@ namespace ports
                 {
                     arrivalTimesForShips[i] = rnd.Next(LeftBorder, RightBorder);// * (RightBorder - LeftBorder) + LeftBorder);
                 }
+                ships[i].SetTime(arrivalTimesForShips[i]);
                 //Console.WriteLine(arrivalTimesForShips[i]);
             }
             
@@ -172,36 +180,32 @@ namespace ports
                         switch (channels[u].ship.ShipType)//проверка на освобождение канала
                         {
                             case "Первый":
-                                firstChannelLoadingCounter++;
-                                if (channels[u].ship.LoadTime <= firstChannelLoadingCounter) // если время загрузки закончилось
+                                channels[u].firstChannelCounter++;
+                                if (channels[u].ship.LoadTime <= channels[u].firstChannelCounter) // если время загрузки закончилось
                                 {
-                                    WriteLine(channels[u].ship.LoadTime);
-                                    WriteLine(firstChannelLoadingCounter);
                                     FreeChannel(u);   // освободить канал
                                     countOfShips[0]++;
-                                    firstChannelLoadingCounter = 0;
+                                    channels[u].firstChannelCounter = 0;
                                 }
                                 break;
                             case "Второй":
-                                secondChannelLoadingCounter++;
-                                if (channels[u].ship.LoadTime <= secondChannelLoadingCounter)
+                                channels[u].secondChannelCounter++;
+                                if (channels[u].ship.LoadTime <= channels[u].secondChannelCounter)
                                 {
-                                    WriteLine(channels[u].ship.LoadTime);
-                                    WriteLine(secondChannelLoadingCounter);
+                                    
                                     FreeChannel(u);
                                     countOfShips[1]++;
-                                    secondChannelLoadingCounter = 0;
+                                    channels[u].secondChannelCounter = 0;
                                 }
                                 break;
                             case "Третий":
-                                thirdChannelLoadingCounter++;
-                                if (channels[u].ship.LoadTime <= thirdChannelLoadingCounter)
+                                channels[u].thirdChannelCounter++;
+                                if (channels[u].ship.LoadTime <= channels[u].thirdChannelCounter)
                                 {
-                                    WriteLine(channels[u].ship.LoadTime);
-                                    WriteLine(thirdChannelLoadingCounter);
+                                    
                                     FreeChannel(u);
                                     countOfShips[2]++;
-                                    thirdChannelLoadingCounter = 0;
+                                    channels[u].thirdChannelCounter = 0;
                                 }
                                 break;
                             
@@ -211,26 +215,25 @@ namespace ports
                 if ((i < arrivalTimesForShips[nextArrivalTimeForShipiterator]) || stormTimes.Contains(i))//новый корабль не прибыл
                 {
                     
-                    if (queue.Count != 0)//в очереди кто то есть
+                    if (queue.Count > 0)//в очереди кто то есть
                     {
                         TakeChannel(false, nextArrivalTimeForShipiterator, i);
                     }
-                    //else // в очереди кто то есть
-                    //{
-                    //    //queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);
-                    //    TakeChannel(false, nextArrivalTimeForShipiterator, i);
-                    //}
+                    
                 }
                 else // корабль прибыл
                 {
                     if (!TakeChannel(true, nextArrivalTimeForShipiterator, i))//все каналы заняты
                     {
-                        queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);//все каналы заняты - в очередь корабль
+                        //ships[countOfShips[0] + countOfShips[1] + countOfShips[2]].SetTime(arrivalTimesForShips[nextArrivalTimeForShipiterator]);
+                        
+                        //queue.Enqueue(ships[countOfShips[0] + countOfShips[1] + countOfShips[2]]);//все каналы заняты - в очередь корабль
+                        queue.Enqueue(ships.FirstOrDefault(s => s.ArrivalTime == arrivalTimesForShips[nextArrivalTimeForShipiterator]));//все каналы заняты - в очередь корабль
                     }
                     nextArrivalTimeForShipiterator++;
                 }
                 IncreaseChannelsWorkingTime(1);
-                counter++;
+                
             }
 
 
@@ -247,6 +250,7 @@ namespace ports
             Console.WriteLine("Типы: " + countOfShips[0] + " " + countOfShips[1] + " " + countOfShips[2]);
             for (int i = 0; i < queueTimes.Count; i++)
             {
+                //WriteLine(queueTimes[i]);
                 //Console.WriteLine(queueTimes[i]);
                 if (queueTimes[i] > 0)
                 {
@@ -254,7 +258,21 @@ namespace ports
                     h++;
                 }
             }
-            Console.WriteLine("Среднее " + sr / h);
+            WriteLine(" " + sr / h);
+            //Console.WriteLine("Среднее " + sr / h);
+            //WriteLine("Времена прибытя в кораблях");
+            //for(int i = 0; i < ships.Length; i ++)
+            //{
+            //    Console.WriteLine(ships[i].ArrivalTime + " " + ships[i].ID);
+            //}
+            
+            //for(int i = 0; i < ships.Count(); i++)
+            //{
+            //    if (ships[i].f == true)
+            //    {
+            //        WriteLine(ships[i].ID);
+            //    }
+            //}
         }
     }
 }
