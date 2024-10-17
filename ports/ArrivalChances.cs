@@ -24,6 +24,7 @@ namespace ports
         }
         public static Charasteristics First = new(0.25, 16, 20);
         public static Charasteristics Second = new(0.8, 21, 27);
-        public static Charasteristics Third = new(1, 31, 39);   
+        public static Charasteristics Third = new(1, 31, 39);
+        public static Charasteristics Fourth = new(0, 18, 24);
     }
 }

@@ -10,8 +10,8 @@ namespace ports
         {
             PortSimulation psm = new PortSimulation();
             psm.Simulate();
-            WriteLine("Дааа ебал я того маму рот");
-            WriteLine("Друзья, а че ебальники у всех грустные, доброе утро, сегодня прекрасный день");
+            
+            
         }
     }
 }
